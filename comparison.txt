@@ -1,0 +1,368 @@
+Grafana vs Alternatives
+Main Alternatives
+
+Kibana
+
+Datadog
+
+New Relic
+
+Comparison Table
+Aspect	Grafana	Kibana	Datadog	New Relic
+Primary role	Visualization layer	Log analytics UI	Full SaaS observability	Full SaaS APM
+Data storage	❌ No (reads from others)	Elasticsearch only	Own backend	Own backend
+Data sources	Very wide (Prom, Loki, SQL, etc.)	Elastic stack only	Mostly internal	Mostly internal
+Vendor lock-in	Low	Medium	High	High
+Cost	Free / OSS friendly	Free + paid	Expensive at scale	Expensive at scale
+Best at	Dashboards & correlations	Logs & search	Unified SaaS	Deep APM
+Customization	Very high	Medium	Limited	Limited
+When to use what?
+
+Use Grafana when:
+
+You want one UI for many backends
+
+You control your infrastructure
+
+You care about cost and flexibility
+
+Use Kibana instead when:
+
+Logs are your primary signal
+
+You already use Elastic stack everywhere
+
+Use Datadog / New Relic when:
+
+You want minimum ops work
+
+You accept vendor lock-in
+
+You’re optimizing for speed, not control
+
+👉 Rule of thumb
+
+Grafana = control
+Datadog/New Relic = convenience
+
+2️⃣ Jaeger vs Alternatives
+Main Alternatives
+
+Zipkin
+
+Tempo
+
+Lightstep
+
+Comparison Table
+Aspect	Jaeger	Zipkin	Tempo	Lightstep
+Primary role	Distributed tracing	Simple tracing	Cheap large-scale tracing	Enterprise tracing
+Storage model	Elasticsearch / Cassandra	Elasticsearch	Object storage	SaaS
+Query power	Medium	Low	Low (traceID based)	High
+Cost efficiency	Medium	Medium	Very high	Low
+Kubernetes fit	Very good	Good	Excellent	Excellent
+OSS maturity	Very high	High	High	Closed-source
+When to use what?
+
+Use Jaeger when:
+
+You want classic, battle-tested tracing
+
+You need queries, filtering
+
+You run Kubernetes / microservices
+
+Use Tempo when:
+
+You have huge trace volume
+
+Cost matters more than rich querying
+
+You already use Grafana
+
+Use Zipkin when:
+
+System is small
+
+Tracing is educational or basic
+
+Use Lightstep when:
+
+You want enterprise support
+
+Budget is not a constraint
+
+👉 Rule of thumb
+
+Jaeger = balanced power
+Tempo = cheap at scale
+
+3️⃣ Kibana vs Alternatives
+Main Alternatives
+
+Grafana
+
+Splunk
+
+Graylog
+
+Comparison Table
+Aspect	Kibana	Grafana	Splunk	Graylog
+Primary role	Log analytics	Multi-signal dashboards	Enterprise log analytics	OSS log management
+Backend	Elasticsearch only	Any	Proprietary	Elasticsearch
+Query language	KQL	Depends on datasource	SPL	Lucene
+Cost	Medium	Low	Very high	Low
+Learning curve	Medium	Low	High	Medium
+Best at	Searching logs	Correlating signals	Compliance & forensics	OSS log pipelines
+When to use what?
+
+Use Kibana when:
+
+Logs are central to debugging
+
+You already use Elastic
+
+You need fast text search
+
+Use Grafana instead when:
+
+You want metrics + logs + traces together
+
+Logs are not your only signal
+
+Use Splunk when:
+
+Compliance, audits, SOC use-cases
+
+Cost is secondary
+
+Use Graylog when:
+
+You want open-source log management
+
+Moderate scale, tight budget
+
+👉 Rule of thumb
+
+Kibana = searching logs
+Grafana = connecting signals
+
+Final High-Level Decision Map
+If your priority is…	Choose
+Flexibility & OSS	Grafana + Jaeger/Tempo
+Logs-first debugging	Kibana
+Enterprise, low effort	Datadog / New Relic
+Massive scale, low cost	Grafana + Tempo
+Compliance & security	Splunk
+One-line takeaway
+
+Grafana visualizes everything,
+Jaeger explains latency,
+Kibana explains text.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Both Kubernetes and Docker expose signals at multiple layers:
+
+Infrastructure (CPU, memory, disk, network)
+
+Runtime (containers & processes)
+
+Platform logic (scheduler, controllers, health)
+
+Application output (logs, errors)
+
+Metrics answer “how much / how often / how healthy”
+Logs answer “what exactly happened”
+
+1️⃣ Docker — Metrics & Logs (Container Runtime Level)
+
+Docker operates at host + container level.
+
+Docker Metrics (What Docker Exposes)
+A. Container Resource Metrics
+
+These come from the Linux kernel (via cgroups).
+
+Metric Category	What it Represents	Why it Matters
+CPU usage	CPU time used by container	Detect CPU starvation
+CPU throttling	Time container was throttled	Indicates CPU limits too low
+Memory usage	RSS, cache, working set	Detect leaks
+Memory limit	Max allowed memory	OOM risk
+OOM kills	Container killed due to memory	Fatal misconfiguration
+Network I/O	Bytes/packets in & out	Traffic & saturation
+Block I/O	Disk reads/writes	Slow storage diagnosis
+
+📌 Nature: Continuous state metrics
+
+B. Container Lifecycle Metrics
+Metric	Meaning
+Container start time	When container started
+Container uptime	Runtime duration
+Restart count	Stability indicator
+Exit code	Reason for termination
+
+📌 Nature: Event-driven but exposed as state
+
+Docker Logs (What Docker Exposes)
+
+Docker logs are raw application stdout/stderr.
+
+Log Characteristics
+Property	Description
+Source	Application stdout / stderr
+Format	Plain text (Docker does not structure logs)
+Retention	Driver-dependent
+Scope	Per container
+Common Log Drivers
+
+json-file (default)
+
+journald
+
+syslog
+
+fluentd
+
+📌 Docker does NOT interpret logs — it only transports them.
+
+Docker Observability Summary
+Signal	Docker Role
+Metrics	Resource usage & lifecycle
+Logs	Application output
+Traces	❌ Not native
+
+
+2️⃣ Kubernetes — Metrics & Logs (Orchestration Level)
+
+Kubernetes adds distributed system intelligence on top of containers.
+A. Node-Level Metrics
+
+Exposed by kubelet + node OS.
+
+Metric	Meaning
+node_cpu_usage	Total CPU usage
+node_memory_available	Free memory
+node_disk_usage	Disk pressure
+node_network_rx/tx	Network traffic
+node_conditions	Ready, DiskPressure, MemoryPressure
+
+📌 Answers: “Is the machine healthy?”
+
+B. Pod-Level Metrics
+
+Pods are Kubernetes’ atomic unit.
+
+Metric	Meaning
+pod_cpu_usage	CPU used by pod
+pod_memory_usage	Memory used
+pod_restart_count	Stability
+pod_phase	Pending / Running / Failed
+pod_ready	Readiness status
+
+📌 Answers: “Is workload behaving?”
+
+C. Container-Level Metrics (Inside Pods)
+
+Same as Docker but namespaced per pod.
+
+Metric	Meaning
+container_cpu_usage	CPU per container
+container_memory_working_set	Actual memory
+container_oom_events	OOM kills
+container_fs_usage	Disk usage
+
+📌 Answers: “Which container is the problem?”
+
+D. Control Plane Metrics (Very Important)
+
+These expose Kubernetes’ brain health.
+
+API Server
+Metric	Meaning
+apiserver_request_total	Request volume
+apiserver_latency	Slow API calls
+apiserver_errors	Failed requests
+Scheduler
+Metric	Meaning
+scheduling_latency	Pod scheduling delay
+unschedulable_pods	Resource shortage
+Controller Manager
+Metric	Meaning
+reconcile_errors	Failed state convergence
+workqueue_depth	Backlog
+
+📌 Answers: “Is Kubernetes itself broken?”
+
+Kubernetes Logs — What Exists?
+A. Application (Pod) Logs
+
+Same concept as Docker logs.
+
+Property	Description
+Source	Container stdout/stderr
+Scope	Per container, per pod
+Structure	App-defined
+Retention	External system
+B. System Component Logs
+
+Critical for cluster debugging.
+
+Component	Log Content
+kube-apiserver	Auth, API calls, errors
+kube-scheduler	Scheduling decisions
+kube-controller-manager	Reconciliation logic
+kubelet	Pod lifecycle, node issues
+
+📌 These logs explain why Kubernetes made decisions.
+
+C. Node-Level Logs
+Log	Purpose
+Container runtime logs	Runtime failures
+OS logs	Kernel, disk, network
+Kubelet logs	Node-pod interaction
+3️⃣ Metrics vs Logs — Kubernetes & Docker Combined
+
+| Aspect | Metrics | Logs |
+|---|---|
+| Nature | Numeric, aggregated | Textual, detailed |
+| Time | Continuous | Event-based |
+| Volume | Low | High |
+| Retention | Long | Short |
+| Use case | Alerting, trends | Debugging, forensics |
+
+4️⃣ What Each Platform Gives You (Responsibility Split)
+Layer	Docker	Kubernetes
+Container resource metrics	✅	✅
+Node health	❌	✅
+Scheduling visibility	❌	✅
+Cluster state	❌	✅
+App logs	✅	✅
+System orchestration logs	❌	✅
+Final Intuition (Very Important)
+
+Docker tells you how a container behaves.
+Kubernetes tells you why a system behaves that way.
+
+Docker = execution
+Kubernetes = coordination
+
+
+
+
+
+
